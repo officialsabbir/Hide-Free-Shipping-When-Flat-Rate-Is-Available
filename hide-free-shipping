@@ -1,0 +1,25 @@
+//snippet for Hide Free Shipping When specific shipping class Flat Rate Is Available
+function hide_free_shipping_for_heavy_oversized_classes( $rates, $package ) {
+    $has_heavy_or_oversized = false;
+
+    // Check if the cart contains any products with "Heavy" or "Oversized" shipping class
+    foreach ( WC()->cart->get_cart() as $cart_item ) {
+        $shipping_class = $cart_item['data']->get_shipping_class();
+        if ( in_array( $shipping_class, ['heavy-packages', 'oversized'] ) ) {
+            $has_heavy_or_oversized = true;
+            break;
+        }
+    }
+
+    // If cart contains "Heavy" or "Oversized" products, remove "Free Shipping" option
+    if ( $has_heavy_or_oversized ) {
+        foreach ( $rates as $rate_id => $rate ) {
+            if ( 'free_shipping' === $rate->method_id ) {
+                unset( $rates[$rate_id] );
+            }
+        }
+    }
+
+    return $rates;
+}
+add_filter( 'woocommerce_package_rates', 'hide_free_shipping_for_heavy_oversized_classes', 10, 2 );
